@@ -1,56 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>AI Gender Prediction</title>
-    <link rel="stylesheet" href="/static/styles.css">
+  <meta charset="UTF-8">
+  <title>AI Gender Prediction</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(145deg, #f9f9f9, #eaeaea);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #111;
+    }
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+      padding: 40px;
+      width: 400px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      font-weight: 600;
+      color: #333;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    button {
+      background: black;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    button:hover {
+      background: #333;
+    }
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid black;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      margin: 20px auto;
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    .result {
+      margin-top: 20px;
+      text-align: left;
+    }
+    .result strong {
+      font-size: 1.2rem;
+      color: black;
+    }
+    footer {
+      margin-top: 25px;
+      font-size: 0.8rem;
+      color: #777;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🔮 AI Gender Prediction</h1>
-        <form id="predictForm">
-            <input type="text" name="name" id="nameInput" placeholder="Enter a name..." required>
-            <br>
-            <button type="submit">Predict</button>
-        </form>
+  <div class="card">
+    <h1>AI Gender Prediction</h1>
+    <form id="predictForm">
+      <input type="text" name="name" placeholder="Enter a name..." required>
+      <button type="submit">Predict</button>
+    </form>
+    <div class="loader" id="loader"></div>
+    <div id="result" class="result"></div>
+    <footer>Created by Prashanth</footer>
+  </div>
 
-        <div id="loading" style="display:none;">
-            <div class="loader"></div>
-            <p>Analyzing...</p>
-        </div>
+  <script>
+    const form = document.getElementById("predictForm");
+    const loader = document.getElementById("loader");
+    const resultDiv = document.getElementById("result");
 
-        <div id="result" class="result" style="display:none;">
-            <h2>Prediction</h2>
-            <p><strong>Gender:</strong> <span class="highlight" id="gender"></span></p>
-            <p><strong>Confidence:</strong> <span class="highlight" id="confidence"></span></p>
-            <p><strong>Reason:</strong> <span id="reason"></span></p>
-        </div>
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      loader.style.display = "block";
+      resultDiv.innerHTML = "";
 
-        <div class="footer">Created by Prashanth</div>
-    </div>
+      const formData = new FormData(form);
 
-    <script>
-        document.getElementById("predictForm").addEventListener("submit", async function(e) {
-            e.preventDefault();
+      const response = await fetch("/predict", {
+        method: "POST",
+        body: formData
+      });
 
-            const formData = new FormData(this);
-            document.getElementById("loading").style.display = "block";
-            document.getElementById("result").style.display = "none";
+      const data = await response.json();
+      loader.style.display = "none";
 
-            const response = await fetch("/predict", {
-                method: "POST",
-                body: formData
-            });
-
-            const data = await response.json();
-
-            document.getElementById("loading").style.display = "none";
-            document.getElementById("result").style.display = "block";
-
-            document.getElementById("gender").innerText = data.gender;
-            document.getElementById("confidence").innerText = data.confidence + "%";
-            document.getElementById("reason").innerText = data.reason;
-        });
-    </script>
+      resultDiv.innerHTML = `
+        <p><strong>Prediction for ${data.name}:</strong></p>
+        <p><strong>Gender:</strong> ${data.gender}</p>
+        <p><strong>Confidence:</strong> ${data.confidence}</p>
+        <p><strong>Reason:</strong> ${data.reason}</p>
+      `;
+    });
+  </script>
 </body>
 </html>
