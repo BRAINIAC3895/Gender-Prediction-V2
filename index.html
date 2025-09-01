@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gender Predictor (India)</title>
+</head>
+<body>
+    <h2>Indian Name Gender Predictor (GPT-powered)</h2>
+    <form method="post" action="/predict">
+        <input type="text" name="name" placeholder="Enter a name" required>
+        <button type="submit">Predict</button>
+    </form>
+
+    {% if result %}
+    <h3>Result:</h3>
+    <pre>{{ result }}</pre>
+    {% endif %}
+</body>
+</html>
