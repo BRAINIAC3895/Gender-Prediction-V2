@@ -2,26 +2,102 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Gender Prediction</title>
-  <link rel="stylesheet" href="/static/styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Name Gender Predictor</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0px 8px 20px rgba(0,0,0,0.2);
+      animation: fadeIn 1s ease-in-out;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2rem;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    input[type="text"] {
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1rem;
+      text-align: center;
+    }
+    button {
+      padding: 12px;
+      background: #ff512f;
+      background: linear-gradient(45deg, #ff512f, #dd2476);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0px 6px 12px rgba(0,0,0,0.2);
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 12px;
+      font-size: 1.1rem;
+      animation: slideUp 0.5s ease;
+      white-space: pre-line;
+    }
+    footer {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h1>🔮 Gender Prediction App</h1>
-    <form method="post">
+    <h1>Name Gender Predictor</h1>
+    <form method="post" action="/predict">
       <input type="text" name="name" placeholder="Enter a name..." required>
       <button type="submit">Predict</button>
     </form>
 
     {% if result %}
-      <div class="result-card">
-        <h2>Prediction for <span class="highlight">{{name}}</span></h2>
-        <p>{{result}}</p>
+      <div class="result">
+        <strong>Prediction for {{name}}:</strong><br>
+        {{result}}
       </div>
     {% endif %}
 
     <footer>
-      <p>✨ Created by <strong>Prashanth</strong></p>
+      Created by Prashanth
     </footer>
   </div>
 </body>
