@@ -1,5 +1,5 @@
 fastapi
 uvicorn
 jinja2
-openai
 python-multipart
+openai
