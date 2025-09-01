@@ -1,121 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>AI Gender Prediction</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(145deg, #f9f9f9, #eaeaea);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      color: #111;
-    }
+    body { background: linear-gradient(to bottom right, #f9f9fb, #e8edf3); }
     .card {
-      background: #fff;
-      border-radius: 20px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-      padding: 40px;
-      width: 400px;
-      text-align: center;
+      background: #fff; border-radius: 20px; padding: 40px; width: 460px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.08);
     }
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 20px;
-      font-weight: 600;
-      color: #333;
+    .spinner {
+      border: 4px solid #e5e7eb; border-top: 4px solid #111827;
+      border-radius: 50%; width: 36px; height: 36px; animation: spin 1s linear infinite;
     }
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 20px;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-    button {
-      background: black;
-      color: white;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 12px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-    button:hover {
-      background: #333;
-    }
-    .loader {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid black;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      margin: 20px auto;
-      animation: spin 1s linear infinite;
-      display: none;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg);}
-      100% { transform: rotate(360deg);}
-    }
-    .result {
-      margin-top: 20px;
-      text-align: left;
-    }
-    .result strong {
-      font-size: 1.2rem;
-      color: black;
-    }
-    footer {
-      margin-top: 25px;
-      font-size: 0.8rem;
-      color: #777;
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
-<body>
-  <div class="card">
-    <h1>AI Gender Prediction</h1>
-    <form id="predictForm">
-      <input type="text" name="name" placeholder="Enter a name..." required>
-      <button type="submit">Predict</button>
-    </form>
-    <div class="loader" id="loader"></div>
-    <div id="result" class="result"></div>
-    <footer>Created by Prashanth</footer>
+<body class="min-h-screen flex items-center justify-center">
+  <div class="card text-center">
+    <h1 class="text-2xl font-semibold text-gray-900 mb-6">AI Gender Prediction</h1>
+
+    <div class="space-y-3">
+      <input id="nameInput" type="text" placeholder="Enter a name..."
+        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-black outline-none" />
+      <button id="goBtn"
+        class="w-full py-3 rounded-xl bg-black text-white font-medium hover:opacity-90 transition">
+        Predict
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="hidden flex flex-col items-center gap-2 mt-6">
+      <div class="spinner"></div>
+      <div class="text-sm text-gray-500">Analyzing…</div>
+    </div>
+
+    <!-- Result -->
+    <div id="result" class="hidden text-left mt-6">
+      <div class="flex items-center justify-between">
+        <div class="text-gray-700">Gender</div>
+        <div id="gender" class="text-xl font-bold text-gray-900"></div>
+      </div>
+      <div class="flex items-center justify-between mt-2">
+        <div class="text-gray-700">Confidence</div>
+        <div id="confidence" class="text-xl font-bold text-blue-600"></div>
+      </div>
+      <div class="mt-4 text-sm text-gray-600" id="reason"></div>
+    </div>
+
+    <div class="mt-8 text-xs text-gray-400">Created by <span class="font-semibold">Prashanth</span></div>
   </div>
 
   <script>
-    const form = document.getElementById("predictForm");
-    const loader = document.getElementById("loader");
-    const resultDiv = document.getElementById("result");
+    const btn = document.getElementById("goBtn");
+    const input = document.getElementById("nameInput");
+    const loading = document.getElementById("loading");
+    const result = document.getElementById("result");
+    const genderEl = document.getElementById("gender");
+    const confEl = document.getElementById("confidence");
+    const reasonEl = document.getElementById("reason");
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      loader.style.display = "block";
-      resultDiv.innerHTML = "";
+    btn.addEventListener("click", async () => {
+      const name = input.value.trim();
+      if (!name) { input.focus(); return; }
 
-      const formData = new FormData(form);
+      // UI: show spinner, hide old result
+      loading.classList.remove("hidden");
+      result.classList.add("hidden");
 
-      const response = await fetch("/predict", {
-        method: "POST",
-        body: formData
-      });
+      try {
+        const res = await fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name })
+        });
+        const data = await res.json();
 
-      const data = await response.json();
-      loader.style.display = "none";
+        genderEl.textContent = data.gender ?? "Unknown";
+        // ensure we show % only once; accept "85" or "85%"
+        const conf = String(data.confidence ?? "0").replace("%",""); 
+        confEl.textContent = `${conf}%`;
+        reasonEl.textContent = data.reason ?? "";
 
-      resultDiv.innerHTML = `
-        <p><strong>Prediction for ${data.name}:</strong></p>
-        <p><strong>Gender:</strong> ${data.gender}</p>
-        <p><strong>Confidence:</strong> ${data.confidence}</p>
-        <p><strong>Reason:</strong> ${data.reason}</p>
-      `;
+        result.classList.remove("hidden");
+      } catch (err) {
+        genderEl.textContent = "Error";
+        confEl.textContent = "0%";
+        reasonEl.textContent = err.message ?? "Something went wrong.";
+        result.classList.remove("hidden");
+      } finally {
+        loading.classList.add("hidden");
+      }
+    });
+
+    // Enter to submit
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") { e.preventDefault(); btn.click(); }
     });
   </script>
 </body>
