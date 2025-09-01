@@ -3,69 +3,137 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Gender Prediction</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <title>AI Gender Predictor</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(to bottom right, #f5f7fa, #c3cfe2);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0px 8px 30px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 400px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #111;
+    }
+    input {
+      padding: 12px 15px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      width: 80%;
+      font-size: 16px;
+      margin-bottom: 20px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    input:focus {
+      border-color: #007aff;
+      box-shadow: 0 0 5px rgba(0,122,255,0.3);
+    }
+    button {
+      background: #007aff;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #005ecb;
+    }
+    .result {
+      margin-top: 25px;
+      font-size: 18px;
+      text-align: left;
+    }
+    .highlight {
+      font-size: 22px;
+      font-weight: 700;
+      color: #007aff;
+    }
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #007aff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+      display: none;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    footer {
+      margin-top: 30px;
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h1>🔮 AI Gender Prediction</h1>
-    <form id="predict-form">
-      <input type="text" name="name" placeholder="Enter a name" required>
-      <button type="submit">Predict</button>
-    </form>
+    <h1>AI Gender Predictor</h1>
+    <input type="text" id="nameInput" placeholder="Enter a name..." />
+    <br>
+    <button onclick="predict()">Predict</button>
 
-    <!-- Spinner -->
-    <div id="spinner" class="spinner hidden"></div>
+    <div class="loader" id="loader"></div>
 
-    <!-- Results -->
-    <div id="result" class="result hidden">
-      <h2 id="gender"></h2>
-      <p id="confidence"></p>
-      <p id="reason"></p>
-    </div>
+    <div class="result" id="result"></div>
 
-    <footer>
-      <p>Created by <strong>Prashanth</strong></p>
-    </footer>
+    <footer>Created by Prashanth 🚀</footer>
   </div>
 
   <script>
-    const form = document.getElementById("predict-form");
-    const spinner = document.getElementById("spinner");
-    const resultBox = document.getElementById("result");
-    const genderEl = document.getElementById("gender");
-    const confidenceEl = document.getElementById("confidence");
-    const reasonEl = document.getElementById("reason");
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-
-      // Show spinner
-      spinner.classList.remove("hidden");
-      resultBox.classList.add("hidden");
-
-      const response = await fetch("/predict", {
-        method: "POST",
-        body: formData
-      });
-
-      const data = await response.json();
-
-      // Hide spinner
-      spinner.classList.add("hidden");
-      resultBox.classList.remove("hidden");
-
-      if (data.error) {
-        genderEl.textContent = "Error";
-        confidenceEl.textContent = "";
-        reasonEl.textContent = data.error;
-      } else {
-        genderEl.textContent = `Gender: ${data.gender}`;
-        confidenceEl.textContent = `Confidence: ${data.confidence}`;
-        reasonEl.textContent = `Reason: ${data.reason}`;
+    async function predict() {
+      const name = document.getElementById("nameInput").value.trim();
+      if (!name) {
+        document.getElementById("result").innerHTML = "⚠️ Please enter a name.";
+        return;
       }
-    });
+
+      // Show loader
+      document.getElementById("loader").style.display = "block";
+      document.getElementById("result").innerHTML = "";
+
+      try {
+        const response = await fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name })
+        });
+
+        const data = await response.json();
+
+        document.getElementById("result").innerHTML = `
+          <p><strong>Prediction for ${name}:</strong></p>
+          <p class="highlight">Gender: ${data.gender}</p>
+          <p class="highlight">Confidence: ${data.confidence}%</p>
+          <p><em>Reason:</em> ${data.reason}</p>
+        `;
+      } catch (err) {
+        document.getElementById("result").innerHTML = "❌ Error fetching prediction.";
+      } finally {
+        document.getElementById("loader").style.display = "none";
+      }
+    }
   </script>
 </body>
 </html>
