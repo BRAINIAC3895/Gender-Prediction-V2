@@ -2,17 +2,19 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from openai import OpenAI
+import openai
+import os
 
 app = FastAPI()
 
 # Mount static folder
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Templates
 templates = Jinja2Templates(directory="templates")
 
-# Initialize OpenAI client
-client = OpenAI()
+# Set API key
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -21,23 +23,29 @@ async def home(request: Request):
 @app.post("/predict", response_class=JSONResponse)
 async def predict(name: str = Form(...)):
     try:
-        prompt = f"Predict the gender for the name '{name}'. Give a confidence % and a one-line reasoning."
-        response = client.chat.completions.create(
+        prompt = f"Predict the gender for the name '{name}'. Give result in JSON with fields: gender, confidence (0-100), reason."
+        
+        response = openai.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}]
+            messages=[
+                {"role": "system", "content": "You are an AI that predicts gender from names."},
+                {"role": "user", "content": prompt}
+            ]
         )
 
-        result_text = response.choices[0].message.content.strip()
+        reply = response.choices[0].message.content
 
-        # Basic parsing: Expecting "Gender: X | Confidence: Y% | Reason: Z"
-        gender, confidence, reason = "Unknown", "N/A", result_text
-        if "Gender:" in result_text:
-            parts = result_text.split("|")
-            gender = parts[0].replace("Gender:", "").strip()
-            confidence = parts[1].replace("Confidence:", "").strip() if len(parts) > 1 else "N/A"
-            reason = parts[2].replace("Reason:", "").strip() if len(parts) > 2 else result_text
+        import json
+        try:
+            data = json.loads(reply)
+        except:
+            data = {
+                "gender": "Unknown",
+                "confidence": "N/A",
+                "reason": reply
+            }
 
-        return {"gender": gender, "confidence": confidence, "reason": reason}
+        return JSONResponse(content=data)
 
     except Exception as e:
-        return {"error": str(e)}
+        return JSONResponse(content={"gender": "Error", "confidence": "N/A", "reason": str(e)})
