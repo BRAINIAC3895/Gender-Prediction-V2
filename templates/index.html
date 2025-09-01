@@ -1,78 +1,28 @@
-body {
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, #4facfe, #00f2fe);
-  margin: 0;
-  padding: 0;
-  color: #333;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gender Prediction</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🔮 Gender Prediction App</h1>
+    <form method="post">
+      <input type="text" name="name" placeholder="Enter a name..." required>
+      <button type="submit">Predict</button>
+    </form>
 
-.container {
-  max-width: 600px;
-  margin: 60px auto;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0px 8px 25px rgba(0,0,0,0.1);
-  padding: 30px;
-  text-align: center;
-}
+    {% if result %}
+      <div class="result-card">
+        <h2>Prediction for <span class="highlight">{{name}}</span></h2>
+        <p>{{result}}</p>
+      </div>
+    {% endif %}
 
-h1 {
-  font-size: 2.2rem;
-  margin-bottom: 10px;
-  color: #222;
-}
-
-.tagline {
-  font-size: 1rem;
-  margin-bottom: 20px;
-  color: #666;
-}
-
-.form-box {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-input[type="text"] {
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  width: 70%;
-  font-size: 1rem;
-}
-
-button {
-  padding: 12px 20px;
-  background: #4facfe;
-  border: none;
-  border-radius: 10px;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-button:hover {
-  background: #00c6ff;
-}
-
-.result-box {
-  margin-top: 20px;
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 15px;
-  text-align: left;
-}
-
-.highlight {
-  color: #4facfe;
-  font-weight: bold;
-}
-
-footer {
-  margin-top: 30px;
-  font-size: 0.9rem;
-  color: #555;
-}
+    <footer>
+      <p>✨ Created by <strong>Prashanth</strong></p>
+    </footer>
+  </div>
+</body>
+</html>
