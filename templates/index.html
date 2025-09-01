@@ -2,103 +2,109 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Name Gender Predictor</title>
+  <title>Gender Prediction</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      color: #fff;
     }
     .container {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(12px);
-      border-radius: 20px;
-      padding: 40px;
       text-align: center;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      max-width: 400px;
       width: 100%;
-      max-width: 500px;
-      box-shadow: 0px 8px 20px rgba(0,0,0,0.2);
-      animation: fadeIn 1s ease-in-out;
     }
     h1 {
+      font-size: 2.5rem;
       margin-bottom: 20px;
-      font-size: 2rem;
     }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    input[type="text"] {
+    input {
       padding: 12px;
-      border-radius: 12px;
+      width: 80%;
       border: none;
+      border-radius: 8px;
+      margin-bottom: 15px;
       font-size: 1rem;
-      text-align: center;
     }
     button {
-      padding: 12px;
-      background: #ff512f;
-      background: linear-gradient(45deg, #ff512f, #dd2476);
+      background: #ff6a00;
       border: none;
-      border-radius: 12px;
+      padding: 12px 24px;
+      border-radius: 8px;
       color: #fff;
       font-size: 1rem;
       cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: background 0.3s;
     }
     button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0px 6px 12px rgba(0,0,0,0.2);
+      background: #e65c00;
     }
-    .result {
+    #result {
       margin-top: 20px;
-      padding: 15px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 12px;
-      font-size: 1.1rem;
-      animation: slideUp 0.5s ease;
-      white-space: pre-line;
+      font-size: 1.2rem;
+      font-weight: 600;
     }
     footer {
-      margin-top: 20px;
+      margin-top: 30px;
       font-size: 0.9rem;
       opacity: 0.8;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    @keyframes slideUp {
-      from { transform: translateY(10px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Name Gender Predictor</h1>
-    <form method="post" action="/predict">
-      <input type="text" name="name" placeholder="Enter a name..." required>
+    <h1>Gender Prediction</h1>
+    <form id="predict-form">
+      <input type="text" id="name" name="name" placeholder="Enter a name..." required>
+      <br>
       <button type="submit">Predict</button>
     </form>
-
-    {% if result %}
-      <div class="result">
-        <strong>Prediction for {{name}}:</strong><br>
-        {{result}}
-      </div>
-    {% endif %}
-
-    <footer>
-      Created by Prashanth
-    </footer>
+    <div id="result"></div>
+    <footer>Created by Prashanth</footer>
   </div>
+
+  <script>
+    document.getElementById("predict-form").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const resultDiv = document.getElementById("result");
+      resultDiv.textContent = "Predicting...";
+
+      try {
+        const response = await fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ name: name })
+        });
+
+        if (!response.ok) {
+          throw new Error("Server error: " + response.status);
+        }
+
+        const data = await response.json();
+        if (data.error) {
+          resultDiv.textContent = "Error: " + data.error;
+        } else {
+          resultDiv.innerHTML = `
+            Prediction for <strong>${data.name}</strong>: ${data.gender}<br>
+            Confidence: ${data.confidence}%<br>
+            Reason: ${data.reason}
+          `;
+        }
+      } catch (error) {
+        resultDiv.textContent = "Error: " + error.message;
+      }
+    });
+  </script>
 </body>
 </html>
